@@ -1,0 +1,35 @@
+version: "3.8"
+
+services:
+  pgdb:
+    image: postgres:15
+    restart: always
+    ports:
+      - "5435:5432"
+    environment:
+      POSTGRES_DB: investment_analyst_db
+      POSTGRES_USER: investment_analyst_user
+      POSTGRES_PASSWORD: investment_analyst_password
+    volumes:
+      - pgdb_data:/var/lib/postgresql/data
+    networks:
+      - investment_analyst_network
+
+  nginx:
+    image: nginx:alpine
+    restart: always
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - investment_analyst_network
+
+networks:
+  investment_analyst_network:
+    driver: bridge
+
+volumes:
+  pgdb_data:

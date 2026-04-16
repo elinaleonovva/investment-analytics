@@ -1,0 +1,56 @@
+{
+  "currencies": [
+    {
+      "currency": "USD",
+      "symbol": "$"
+    },
+    {
+      "currency": "EUR",
+      "symbol": "€"
+    },
+    {
+      "currency": "GBP",
+      "symbol": "£"
+    },
+    {
+      "currency": "JPY",
+      "symbol": "¥"
+    },
+    {
+      "currency": "CHF",
+      "symbol": "CHF"
+    },
+    {
+      "currency": "CAD",
+      "symbol": "C$"
+    },
+    {
+      "currency": "AUD",
+      "symbol": "A$"
+    },
+    {
+      "currency": "CNY",
+      "symbol": "¥"
+    },
+    {
+      "currency": "HKD",
+      "symbol": "HK$"
+    },
+    {
+      "currency": "INR",
+      "symbol": "₹"
+    },
+    {
+      "currency": "RUB",
+      "symbol": "₽"
+    },
+    {
+      "currency": "KRW",
+      "symbol": "KRW"
+    },
+    {
+      "currency": "TWD",
+      "symbol": "NT$"
+    }
+  ]
+}

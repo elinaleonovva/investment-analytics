@@ -1,0 +1,249 @@
+{
+  "indexes": [
+    {
+      "indexName": "Apple",
+      "ccyId": "USD",
+      "indexISIN": "AAPL"
+    },
+    {
+      "indexName": "Microsoft",
+      "ccyId": "USD",
+      "indexISIN": "MSFT"
+    },
+    {
+      "indexName": "Amazon",
+      "ccyId": "USD",
+      "indexISIN": "AMZN"
+    },
+    {
+      "indexName": "Alphabet (Google) Class A",
+      "ccyId": "USD",
+      "indexISIN": "GOOGL"
+    },
+    {
+      "indexName": "Alphabet (Google) Class C",
+      "ccyId": "USD",
+      "indexISIN": "GOOG"
+    },
+    {
+      "indexName": "Tesla",
+      "ccyId": "USD",
+      "indexISIN": "TSLA"
+    },
+    {
+      "indexName": "Nvidia",
+      "ccyId": "USD",
+      "indexISIN": "NVDA"
+    },
+    {
+      "indexName": "Meta (Facebook)",
+      "ccyId": "USD",
+      "indexISIN": "META"
+    },
+    {
+      "indexName": "Berkshire Hathaway",
+      "ccyId": "USD",
+      "indexISIN": "BRK.B"
+    },
+    {
+      "indexName": "Johnson & Johnson",
+      "ccyId": "USD",
+      "indexISIN": "JNJ"
+    },
+    {
+      "indexName": "Visa",
+      "ccyId": "USD",
+      "indexISIN": "V"
+    },
+    {
+      "indexName": "JPMorgan Chase",
+      "ccyId": "USD",
+      "indexISIN": "JPM"
+    },
+    {
+      "indexName": "Procter & Gamble",
+      "ccyId": "USD",
+      "indexISIN": "PG"
+    },
+    {
+      "indexName": "UnitedHealth Group",
+      "ccyId": "USD",
+      "indexISIN": "UNH"
+    },
+    {
+      "indexName": "ExxonMobil",
+      "ccyId": "USD",
+      "indexISIN": "XOM"
+    },
+    {
+      "indexName": "Samsung Electronics",
+      "ccyId": "KRW",
+      "indexISIN": "005930.KS"
+    },
+    {
+      "indexName": "Toyota",
+      "ccyId": "JPY",
+      "indexISIN": "7203.T"
+    },
+    {
+      "indexName": "Nestlé",
+      "ccyId": "CHF",
+      "indexISIN": "NESN.SW"
+    },
+    {
+      "indexName": "Roche",
+      "ccyId": "CHF",
+      "indexISIN": "ROG.SW"
+    },
+    {
+      "indexName": "LVMH",
+      "ccyId": "EUR",
+      "indexISIN": "MC.PA"
+    },
+    {
+      "indexName": "TSMC",
+      "ccyId": "TWD",
+      "indexISIN": "2330.TW"
+    },
+    {
+      "indexName": "ASML",
+      "ccyId": "EUR",
+      "indexISIN": "ASML.AS"
+    },
+    {
+      "indexName": "Alibaba",
+      "ccyId": "HKD",
+      "indexISIN": "9988.HK"
+    },
+    {
+      "indexName": "Tencent",
+      "ccyId": "HKD",
+      "indexISIN": "0700.HK"
+    },
+    {
+      "indexName": "Reliance Industries",
+      "ccyId": "INR",
+      "indexISIN": "RELIANCE.NS"
+    },
+    {
+      "indexName": "HSBC",
+      "ccyId": "GBP",
+      "indexISIN": "HSBA.L"
+    },
+    {
+      "indexName": "BP",
+      "ccyId": "GBP",
+      "indexISIN": "BP.L"
+    },
+    {
+      "indexName": "Shell",
+      "ccyId": "GBP",
+      "indexISIN": "SHEL.L"
+    },
+    {
+      "indexName": "Siemens",
+      "ccyId": "EUR",
+      "indexISIN": "SIE.DE"
+    },
+    {
+      "indexName": "BMW",
+      "ccyId": "EUR",
+      "indexISIN": "BMW.DE"
+    },
+    {
+      "indexName": "SAP",
+      "ccyId": "EUR",
+      "indexISIN": "SAP.DE"
+    },
+    {
+      "indexName": "Volkswagen",
+      "ccyId": "EUR",
+      "indexISIN": "VOW3.DE"
+    },
+    {
+      "indexName": "Sony",
+      "ccyId": "JPY",
+      "indexISIN": "6758.T"
+    },
+    {
+      "indexName": "Panasonic",
+      "ccyId": "JPY",
+      "indexISIN": "6752.T"
+    },
+    {
+      "indexName": "Airbus",
+      "ccyId": "EUR",
+      "indexISIN": "AIR.PA"
+    },
+    {
+      "indexName": "Boeing",
+      "ccyId": "USD",
+      "indexISIN": "BA"
+    },
+    {
+      "indexName": "Pfizer",
+      "ccyId": "USD",
+      "indexISIN": "PFE"
+    },
+    {
+      "indexName": "Moderna",
+      "ccyId": "USD",
+      "indexISIN": "MRNA"
+    },
+    {
+      "indexName": "Merck",
+      "ccyId": "USD",
+      "indexISIN": "MRK"
+    },
+    {
+      "indexName": "Coca-Cola",
+      "ccyId": "USD",
+      "indexISIN": "KO"
+    },
+    {
+      "indexName": "PepsiCo",
+      "ccyId": "USD",
+      "indexISIN": "PEP"
+    },
+    {
+      "indexName": "McDonald's",
+      "ccyId": "USD",
+      "indexISIN": "MCD"
+    },
+    {
+      "indexName": "Starbucks",
+      "ccyId": "USD",
+      "indexISIN": "SBUX"
+    },
+    {
+      "indexName": "Netflix",
+      "ccyId": "USD",
+      "indexISIN": "NFLX"
+    },
+    {
+      "indexName": "Adobe",
+      "ccyId": "USD",
+      "indexISIN": "ADBE"
+    },
+    {
+      "indexName": "Salesforce",
+      "ccyId": "USD",
+      "indexISIN": "CRM"
+    },
+    {
+      "indexName": "Intel",
+      "ccyId": "USD",
+      "indexISIN": "INTC"
+    },
+    {
+      "indexName": "AMD",
+      "ccyId": "USD",
+      "indexISIN": "AMD"
+    },
+    {
+      "indexName": "IBM",
+      "ccyId": "USD",
+      "indexISIN": "IBM"
+    }
+  ]
+}

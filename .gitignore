@@ -1,0 +1,4 @@
+/market-vision-backend/.venv/
+/.env.prod
+/.env
+/debug-0b13f5.log
