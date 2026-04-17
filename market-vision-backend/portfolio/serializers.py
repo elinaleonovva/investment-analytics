@@ -34,7 +34,7 @@ class PortfolioListSerializer(serializers.ModelSerializer):
 
 class TradeSerializer(serializers.ModelSerializer):
     stock = StockSerializer(source="stockId", read_only=True)
-    price_per_share = serializers.DecimalField(max_digits=20, decimal_places=6, read_only=True)
+    price_per_share = serializers.SerializerMethodField()
 
     class Meta:
         model = Trade
@@ -49,6 +49,21 @@ class TradeSerializer(serializers.ModelSerializer):
             "created_at",
         ]
         read_only_fields = ["id", "stock", "price_per_share", "created_at"]
+
+    def get_price_per_share(self, obj):
+        request_currency = self.context.get("currency")
+        if not request_currency or not obj.stockId or not obj.stockId.ccyId:
+            return obj.price_per_share
+
+        stock_currency = obj.stockId.ccyId.currency
+        if request_currency == stock_currency:
+            return obj.price_per_share
+
+        fx = obj.stockId.ccyId.get_rate_to(
+            request_currency=request_currency,
+            date=obj.tradeDate,
+        )
+        return obj.price_per_share * fx
 
 
 class PortfolioDetailSerializer(serializers.ModelSerializer):

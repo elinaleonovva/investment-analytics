@@ -92,6 +92,22 @@ class PortfolioAnalyticsTests(TestCase):
         self.assertIn("price_per_share", serialized)
         self.assertEqual(Decimal(str(serialized["price_per_share"])), Decimal("123.45"))
 
+    @patch("fixings.models.Currency.get_rate_to")
+    def test_trade_serializer_converts_price_per_share_to_requested_currency(self, mock_get_rate_to):
+        mock_get_rate_to.return_value = Decimal("80")
+        trade = Trade.objects.create(
+            portfolioId=self.portfolio,
+            stockId=self.stock,
+            side=Trade.Side.BUY,
+            quantity=Decimal("1"),
+            price_per_share=Decimal("100"),
+            tradeDate=datetime.date(2026, 4, 17),
+        )
+
+        serialized = TradeSerializer(trade, context={"currency": "RUB"}).data
+
+        self.assertEqual(Decimal(str(serialized["price_per_share"])), Decimal("8000"))
+
     def test_trade_serializer_allows_create_without_price_per_share(self):
         serializer = TradeSerializer(
             data={
@@ -103,3 +119,31 @@ class PortfolioAnalyticsTests(TestCase):
         )
 
         self.assertTrue(serializer.is_valid(), serializer.errors)
+
+    @patch("fixings.models.Currency.get_rate_to")
+    @patch("fixings.models.Index.get_price")
+    def test_positions_analytics_converts_trade_cost_to_requested_currency(self, mock_get_price, mock_get_rate_to):
+        def get_price_side_effect(request_currency=None, date=None):
+            return Decimal("9600") if request_currency == "RUB" else Decimal("120")
+
+        def get_rate_side_effect(request_currency="USD", date=None):
+            return Decimal("80") if request_currency == "RUB" else Decimal("1")
+
+        mock_get_price.side_effect = get_price_side_effect
+        mock_get_rate_to.side_effect = get_rate_side_effect
+
+        Trade.objects.create(
+            portfolioId=self.portfolio,
+            stockId=self.stock,
+            side=Trade.Side.BUY,
+            quantity=Decimal("1"),
+            price_per_share=Decimal("100"),
+            tradeDate=datetime.date(2026, 4, 17),
+        )
+
+        summary = self.portfolio.get_portfolio_summary(currency="RUB")
+
+        self.assertEqual(summary["currentValue"], Decimal("9600"))
+        self.assertEqual(summary["investedValue"], Decimal("8000"))
+        self.assertEqual(summary["pnl"], Decimal("1600"))
+        self.assertEqual(summary["pnlPercent"], Decimal("20"))

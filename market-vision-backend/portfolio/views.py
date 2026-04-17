@@ -98,7 +98,7 @@ class PortfolioTradesView(APIView):
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
-        price_per_share = stock.get_price(date=trade_date, request_currency=currency)
+        price_per_share = stock.get_price(date=trade_date)
 
         if not price_per_share or price_per_share <= 0:
             return Response({"error": "Failed to fetch stock price for this date"}, status=status.HTTP_400_BAD_REQUEST)

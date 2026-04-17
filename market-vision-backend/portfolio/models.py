@@ -40,6 +40,11 @@ class Portfolio(models.Model):
             pos = positions[stock_id]
             trade_qty = trade.quantity
             trade_price = trade.price_per_share
+            if trade.stockId.ccyId and currency != trade.stockId.ccyId.currency:
+                trade_price *= trade.stockId.ccyId.get_rate_to(
+                    request_currency=currency,
+                    date=trade.tradeDate,
+                )
 
             if trade.side == Trade.Side.BUY:
                 total_cost_before = pos["quantity"] * pos["average_cost"]
