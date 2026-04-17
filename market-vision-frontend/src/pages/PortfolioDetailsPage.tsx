@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 
-import api from '../api/client';
+import api, { toNumber } from '../api/client';
 import { Currency, PortfolioAnalytics, PortfolioDetail, Stock, Trade } from '../types';
 import '../styles/portfolio-details.css';
 
@@ -335,7 +335,9 @@ const PortfolioDetailsPage: React.FC<Props> = ({ activeTab }) => {
                 </thead>
                 <tbody>
                   {trades.map((trade) => {
-                    const volume = Number(trade.quantity) * Number(trade.price_per_share);
+                    const quantity = toNumber(trade.quantity);
+                    const pricePerShare = toNumber(trade.price_per_share);
+                    const volume = quantity * pricePerShare;
                     return (
                       <tr key={trade.id}>
                         <td>{trade.tradeDate}</td>
@@ -343,8 +345,8 @@ const PortfolioDetailsPage: React.FC<Props> = ({ activeTab }) => {
                         <td className={trade.side === 'BUY' ? 'positive' : 'negative'}>
                           {trade.side === 'BUY' ? 'ПОКУПКА' : 'ПРОДАЖА'}
                         </td>
-                        <td>{Number(trade.quantity).toFixed(4)}</td>
-                        <td>{Number(trade.price_per_share).toFixed(2)}</td>
+                        <td>{quantity.toFixed(4)}</td>
+                        <td>{pricePerShare.toFixed(2)}</td>
                         <td>{volume.toFixed(2)}</td>
                         <td style={{ textAlign: 'right' }}>
                           <button className="button button-danger" onClick={() => handleDeleteTrade(trade.id)}>

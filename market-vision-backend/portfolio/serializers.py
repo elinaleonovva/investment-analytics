@@ -20,7 +20,8 @@ class PortfolioListSerializer(serializers.ModelSerializer):
         return obj.get_current_value(currency=currency)
 
     def get_investedValue(self, obj):
-        return obj.get_invested_value()
+        currency = self.context.get("currency", "USD")
+        return obj.get_invested_value(currency=currency)
 
     def get_pnl(self, obj):
         currency = self.context.get("currency", "USD")
@@ -33,6 +34,7 @@ class PortfolioListSerializer(serializers.ModelSerializer):
 
 class TradeSerializer(serializers.ModelSerializer):
     stock = StockSerializer(source="stockId", read_only=True)
+    price_per_share = serializers.DecimalField(max_digits=20, decimal_places=6, read_only=True)
 
     class Meta:
         model = Trade
@@ -42,9 +44,11 @@ class TradeSerializer(serializers.ModelSerializer):
             "stock",
             "side",
             "quantity",
+            "price_per_share",
             "tradeDate",
             "created_at",
         ]
+        read_only_fields = ["id", "stock", "price_per_share", "created_at"]
 
 
 class PortfolioDetailSerializer(serializers.ModelSerializer):
@@ -71,7 +75,8 @@ class PortfolioDetailSerializer(serializers.ModelSerializer):
         return obj.get_current_value(currency=self.context.get("currency", "USD"))
 
     def get_investedValue(self, obj):
-        return obj.get_invested_value()
+        currency = self.context.get("currency", "USD")
+        return obj.get_invested_value(currency=currency)
 
     def get_pnl(self, obj):
         return obj.get_pnl(currency=self.context.get("currency", "USD"))

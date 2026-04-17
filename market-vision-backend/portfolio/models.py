@@ -34,6 +34,7 @@ class Portfolio(models.Model):
                     "quantity": Decimal("0"),
                     "average_cost": Decimal("0"),
                     "realized_pnl": Decimal("0"),
+                    "realized_cost": Decimal("0"),
                 }
 
             pos = positions[stock_id]
@@ -46,8 +47,10 @@ class Portfolio(models.Model):
                 pos["quantity"] += trade_qty
                 pos["average_cost"] = (total_cost_before + new_cost) / pos["quantity"]
             elif trade.side == Trade.Side.SELL:
+                realized_cost = trade_qty * pos["average_cost"]
                 pos["quantity"] -= trade_qty
                 realized = trade_qty * (trade_price - pos["average_cost"])
+                pos["realized_cost"] += realized_cost
                 pos["realized_pnl"] += realized
 
         active_positions = {}
@@ -65,6 +68,7 @@ class Portfolio(models.Model):
                     "current_value": current_value,
                     "unrealized_pnl": unrealized_pnl,
                     "realized_pnl": data["realized_pnl"],
+                    "realized_cost": data["realized_cost"],
                     "total_pnl": unrealized_pnl + data["realized_pnl"],
                 }
 
@@ -75,11 +79,13 @@ class Portfolio(models.Model):
 
         current_value = sum((p["current_value"] for p in positions.values()), Decimal("0"))
         invested_value = sum((p["invested"] for p in positions.values()), Decimal("0"))
+        realized_cost = sum((p["realized_cost"] for p in positions.values()), Decimal("0"))
         realized_pnl = sum((p["realized_pnl"] for p in positions.values()), Decimal("0"))
         unrealized_pnl = sum((p["unrealized_pnl"] for p in positions.values()), Decimal("0"))
 
         total_pnl = unrealized_pnl + realized_pnl
-        pnl_percent = (total_pnl / invested_value * 100) if invested_value > 0 else Decimal("0")
+        total_cost_basis = invested_value + realized_cost
+        pnl_percent = (total_pnl / total_cost_basis * 100) if total_cost_basis > 0 else Decimal("0")
 
         return {
             "currentValue": current_value,
@@ -89,27 +95,16 @@ class Portfolio(models.Model):
         }
 
     def get_current_value(self, currency="USD"):
-        total = Decimal("0")
-        for position in self.get_positions_analytics().values():
-            stock = position["stock"]
-            total += position["quantity"] * stock.get_price(request_currency=currency)
-        return total
+        return self.get_portfolio_summary(currency=currency)["currentValue"]
 
-    def get_invested_value(self):
-        invested = Decimal("0")
-        for trade in self.trades.all():
-            amount = trade.quantity * trade.price_per_share
-            invested += amount if trade.side == Trade.Side.BUY else -amount
-        return invested
+    def get_invested_value(self, currency="USD"):
+        return self.get_portfolio_summary(currency=currency)["investedValue"]
 
     def get_pnl(self, currency="USD"):
-        return self.get_current_value(currency=currency) - self.get_invested_value()
+        return self.get_portfolio_summary(currency=currency)["pnl"]
 
     def get_pnl_percent(self, currency="USD"):
-        invested = self.get_invested_value()
-        if invested == 0:
-            return Decimal("0")
-        return (self.get_pnl(currency=currency) / invested) * 100
+        return self.get_portfolio_summary(currency=currency)["pnlPercent"]
 
 
 class Trade(models.Model):

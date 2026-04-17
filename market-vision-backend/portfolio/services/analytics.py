@@ -5,20 +5,17 @@ from portfolio.models import Portfolio
 
 def build_portfolio_analytics(portfolio: Portfolio, currency: str = "USD"):
     positions_payload = []
-    total_current = Decimal("0")
-    total_invested = Decimal("0")
+    summary = portfolio.get_portfolio_summary(currency=currency)
 
-    for position in portfolio.get_positions_analytics().values():
+    for position in portfolio.get_positions_analytics(currency=currency).values():
         stock = position["stock"]
         quantity = position["quantity"]
         invested = position["invested"]
-        current_price = stock.get_price(request_currency=currency)
-        current_value = quantity * current_price
-        pnl = current_value - invested
-        pnl_percent = Decimal("0") if invested == 0 else (pnl / invested) * 100
-
-        total_current += current_value
-        total_invested += invested
+        realized_cost = position["realized_cost"]
+        current_value = position["current_value"]
+        pnl = position["total_pnl"]
+        total_cost_basis = invested + realized_cost
+        pnl_percent = Decimal("0") if total_cost_basis == 0 else (pnl / total_cost_basis) * 100
 
         positions_payload.append(
             {
@@ -31,17 +28,14 @@ def build_portfolio_analytics(portfolio: Portfolio, currency: str = "USD"):
             }
         )
 
-    total_pnl = total_current - total_invested
-    total_pnl_percent = Decimal("0") if total_invested == 0 else (total_pnl / total_invested) * 100
-
     top_gainers = sorted(positions_payload, key=lambda x: x["pnl_percent"], reverse=True)[:3]
     top_losers = sorted(positions_payload, key=lambda x: x["pnl_percent"])[:3]
 
     return {
-        "totalCurrentValue": total_current,
-        "totalInvestedValue": total_invested,
-        "totalPnL": total_pnl,
-        "totalPnLPercent": total_pnl_percent,
+        "totalCurrentValue": summary["currentValue"],
+        "totalInvestedValue": summary["investedValue"],
+        "totalPnL": summary["pnl"],
+        "totalPnLPercent": summary["pnlPercent"],
         "positions": positions_payload,
         "topGainers": top_gainers,
         "topLosers": top_losers,
