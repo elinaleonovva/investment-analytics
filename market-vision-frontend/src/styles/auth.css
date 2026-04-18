@@ -61,6 +61,15 @@
   padding: 8px 10px;
 }
 
+.auth-success {
+  color: #1d6b3b;
+  background: #eaf8ef;
+  border: 1px solid #bfe3ca;
+  border-radius: 8px;
+  padding: 8px 10px;
+  margin-bottom: 12px;
+}
+
 .auth-link {
   margin-top: 12px;
   display: inline-block;

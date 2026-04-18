@@ -1,5 +1,6 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
+from rest_framework.exceptions import AuthenticationFailed
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 
@@ -18,7 +19,7 @@ class UserSerializer(serializers.ModelSerializer):
     def validate_email(self, value):
         normalized_email = User.objects.normalize_email(value).lower()
         if User.objects.filter(email=normalized_email).exists():
-            raise serializers.ValidationError("Пользователь с таким email уже существует.")
+            raise serializers.ValidationError("Пользователь с таким email уже существует")
         return normalized_email
 
     def create(self, validated_data):
@@ -34,7 +35,17 @@ class UserSerializer(serializers.ModelSerializer):
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     def validate(self, attrs):
-        attrs[self.username_field] = attrs[self.username_field].lower()
+        email = attrs[self.username_field].lower()
+        attrs[self.username_field] = email
+
+        user = User.objects.filter(email=email).first()
+        if not user:
+            raise AuthenticationFailed("Пользователь не зарегистрирован")
+
+        password = attrs.get("password")
+        if not password or not user.check_password(password):
+            raise AuthenticationFailed("Неверный пароль")
+
         return super().validate(attrs)
 
     @classmethod

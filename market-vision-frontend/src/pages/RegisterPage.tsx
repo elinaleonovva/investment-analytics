@@ -1,7 +1,14 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { register } from '../api/auth';
+import { logout, register } from '../api/auth';
 import '../styles/auth.css';
+
+const DUPLICATE_EMAIL_ERRORS = new Set([
+  'user with this email already exists.',
+  'A user with that email already exists.',
+  'Пользователь с таким email уже существует',
+]);
+const EMAIL_VALIDATION_MESSAGE = 'Введите корректный email';
 
 const RegisterPage: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -14,17 +21,34 @@ const RegisterPage: React.FC = () => {
     setError('');
     try {
       await register({ email, password });
-      navigate('/');
+      logout();
+      navigate('/login', {
+        replace: true,
+        state: {
+          registeredEmail: email.trim().toLowerCase(),
+          successMessage: 'Регистрация прошла успешно',
+        },
+      });
     } catch (err: any) {
       const emailError = err.response?.data?.email;
       const detail = err.response?.data?.detail;
 
       if (Array.isArray(emailError) && emailError.length > 0) {
+        if (DUPLICATE_EMAIL_ERRORS.has(emailError[0])) {
+          setError('Пользователь с таким email уже зарегистрирован');
+          return;
+        }
+
         setError(emailError[0]);
         return;
       }
 
-      setError(detail || 'Не удалось зарегистрироваться. Проверьте данные.');
+      if (detail && DUPLICATE_EMAIL_ERRORS.has(detail)) {
+        setError('Пользователь с таким email уже зарегистрирован');
+        return;
+      }
+
+      setError(detail || 'Не удалось зарегистрироваться. Проверьте данные');
     }
   };
 
@@ -42,6 +66,12 @@ const RegisterPage: React.FC = () => {
               className="auth-input"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              onInvalid={(e) => {
+                e.currentTarget.setCustomValidity(EMAIL_VALIDATION_MESSAGE);
+              }}
+              onInput={(e) => {
+                e.currentTarget.setCustomValidity('');
+              }}
               required
             />
           </div>

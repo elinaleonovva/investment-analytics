@@ -1,10 +1,15 @@
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useLocation, useNavigate, Link } from 'react-router-dom';
 import { login } from '../api/auth';
 import '../styles/auth.css';
 
+const LOGIN_ERROR_MESSAGE = 'Не удалось выполнить вход';
+const EMAIL_VALIDATION_MESSAGE = 'Введите корректный email с @';
+
 const LoginPage: React.FC = () => {
-  const [email, setEmail] = useState('');
+  const location = useLocation();
+  const navigationState = location.state as { registeredEmail?: string; successMessage?: string } | null;
+  const [email, setEmail] = useState(navigationState?.registeredEmail || '');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const navigate = useNavigate();
@@ -15,8 +20,9 @@ const LoginPage: React.FC = () => {
     try {
       await login({ email, password });
       navigate('/');
-    } catch (_err) {
-      setError('Неверные данные для входа.');
+    } catch (err: any) {
+      const detail = err.response?.data?.detail;
+      setError(detail || LOGIN_ERROR_MESSAGE);
     }
   };
 
@@ -24,6 +30,7 @@ const LoginPage: React.FC = () => {
     <div className="auth-container">
       <div className="auth-card">
         <h1 className="auth-title">Вход в систему</h1>
+        {navigationState?.successMessage && <div className="auth-success">{navigationState.successMessage}</div>}
         <form className="auth-form" onSubmit={handleLogin}>
           <div className="form-group">
             <label htmlFor="email">Email</label>
@@ -33,6 +40,12 @@ const LoginPage: React.FC = () => {
               className="auth-input"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              onInvalid={(e) => {
+                e.currentTarget.setCustomValidity(EMAIL_VALIDATION_MESSAGE);
+              }}
+              onInput={(e) => {
+                e.currentTarget.setCustomValidity('');
+              }}
               required
             />
           </div>
