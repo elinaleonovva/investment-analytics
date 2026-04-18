@@ -9,9 +9,18 @@ const MarketPage: React.FC = () => {
   const [stocks, setStocks] = useState<Stock[]>([]);
   const [currencies, setCurrencies] = useState<MarketCurrency[]>([]);
   const [metals, setMetals] = useState<Metal[]>([]);
+  const [sectionsOpen, setSectionsOpen] = useState({
+    stocks: false,
+    currencies: false,
+    metals: false,
+  });
   const [loading, setLoading] = useState(false);
   const [updating, setUpdating] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const toggleSection = (section: 'stocks' | 'currencies' | 'metals') => {
+    setSectionsOpen((prev) => ({ ...prev, [section]: !prev[section] }));
+  };
 
   const loadAll = useCallback(async () => {
     setLoading(true);
@@ -81,93 +90,109 @@ const MarketPage: React.FC = () => {
       ) : (
         <>
           {error && <section className="panel"><p className="negative">{error}</p></section>}
+
           <section className="panel">
-            <h2>Акции</h2>
-            <div className="table-wrap">
-              <table className="table">
-                <thead>
-                  <tr>
-                    <th>Название</th>
-                    <th>Тикер</th>
-                    <th>Цена</th>
-                    <th>Цена в {selectedCurrency}</th>
-                    <th>30д, %</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {stocks.map((stock) => {
-                    const dynamic = toNumber(stock.monthlyDynamic);
-                    return (
-                      <tr key={stock.id}>
-                        <td>{stock.indexName}</td>
-                        <td>{stock.indexISIN}</td>
-                        <td>{toNumber(stock.currentPrice).toFixed(2)} {stock.currency?.symbol || ''}</td>
-                        <td>{toNumber(stock.currentConvertedPrice).toFixed(2)}</td>
-                        <td className={dynamic >= 0 ? 'positive' : 'negative'}>{dynamic.toFixed(2)}</td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
+            <button type="button" className="section-toggle" onClick={() => toggleSection('stocks')}>
+              <span>Акции</span>
+              <span>{sectionsOpen.stocks ? 'Скрыть' : 'Показать'}</span>
+            </button>
+            {sectionsOpen.stocks && (
+              <div className="table-wrap">
+                <table className="table">
+                  <thead>
+                    <tr>
+                      <th>Название</th>
+                      <th>Тикер</th>
+                      <th>Цена</th>
+                      <th>Цена в {selectedCurrency}</th>
+                      <th>30д, %</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {stocks.map((stock) => {
+                      const dynamic = toNumber(stock.monthlyDynamic);
+                      return (
+                        <tr key={stock.id}>
+                          <td>{stock.indexName}</td>
+                          <td>{stock.indexISIN}</td>
+                          <td>{toNumber(stock.currentPrice).toFixed(2)} {stock.currency?.symbol || ''}</td>
+                          <td>{toNumber(stock.currentConvertedPrice).toFixed(2)}</td>
+                          <td className={dynamic >= 0 ? 'positive' : 'negative'}>{dynamic.toFixed(2)}</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </section>
 
           <section className="panel">
-            <h2>Валюты</h2>
-            <div className="table-wrap">
-              <table className="table">
-                <thead>
-                  <tr>
-                    <th>Код</th>
-                    <th>Символ</th>
-                    <th>Курс к {selectedCurrency}</th>
-                    <th>30д, %</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {currencies.map((item) => {
-                    const dynamic = toNumber(item.monthlyDynamic);
-                    return (
-                      <tr key={item.id}>
-                        <td>{item.currency}</td>
-                        <td>{item.symbol}</td>
-                        <td>{toNumber(item.rateToRequestedCurrency).toFixed(4)}</td>
-                        <td className={dynamic >= 0 ? 'positive' : 'negative'}>{dynamic.toFixed(2)}</td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
+            <button type="button" className="section-toggle" onClick={() => toggleSection('currencies')}>
+              <span>Валюты</span>
+              <span>{sectionsOpen.currencies ? 'Скрыть' : 'Показать'}</span>
+            </button>
+            {sectionsOpen.currencies && (
+              <div className="table-wrap">
+                <table className="table">
+                  <thead>
+                    <tr>
+                      <th>Код</th>
+                      <th>Символ</th>
+                      <th>Курс к {selectedCurrency}</th>
+                      <th>30д, %</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {currencies.map((item) => {
+                      const dynamic = toNumber(item.monthlyDynamic);
+                      return (
+                        <tr key={item.id}>
+                          <td>{item.currency}</td>
+                          <td>{item.symbol}</td>
+                          <td>{toNumber(item.rateToRequestedCurrency).toFixed(4)}</td>
+                          <td className={dynamic >= 0 ? 'positive' : 'negative'}>{dynamic.toFixed(2)}</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </section>
 
           <section className="panel">
-            <h2>Драгоценные металлы</h2>
-            <div className="table-wrap">
-              <table className="table">
-                <thead>
-                  <tr>
-                    <th>Код</th>
-                    <th>Название</th>
-                    <th>Цена в {selectedCurrency}</th>
-                    <th>30д, %</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {metals.map((metal) => {
-                    const dynamic = toNumber(metal.monthlyDynamic);
-                    return (
-                      <tr key={metal.id}>
-                        <td>{metal.code}</td>
-                        <td>{metal.name}</td>
-                        <td>{toNumber(metal.currentConvertedPrice).toFixed(4)}</td>
-                        <td className={dynamic >= 0 ? 'positive' : 'negative'}>{dynamic.toFixed(2)}</td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
+            <button type="button" className="section-toggle" onClick={() => toggleSection('metals')}>
+              <span>Драгоценные металлы</span>
+              <span>{sectionsOpen.metals ? 'Скрыть' : 'Показать'}</span>
+            </button>
+            {sectionsOpen.metals && (
+              <div className="table-wrap">
+                <table className="table">
+                  <thead>
+                    <tr>
+                      <th>Код</th>
+                      <th>Название</th>
+                      <th>Цена в {selectedCurrency}</th>
+                      <th>30д, %</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {metals.map((metal) => {
+                      const dynamic = toNumber(metal.monthlyDynamic);
+                      return (
+                        <tr key={metal.id}>
+                          <td>{metal.code}</td>
+                          <td>{metal.name}</td>
+                          <td>{toNumber(metal.currentConvertedPrice).toFixed(4)}</td>
+                          <td className={dynamic >= 0 ? 'positive' : 'negative'}>{dynamic.toFixed(2)}</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </section>
         </>
       )}
