@@ -115,10 +115,17 @@ const PortfolioDetailsPage: React.FC<Props> = ({ activeTab }) => {
     setSaving(true);
     setError(null);
     try {
+      const quantity = Number.parseInt(tradeForm.quantity, 10);
+
+      if (!Number.isInteger(quantity) || quantity <= 0) {
+        setError('Количество должно быть целым числом больше нуля.');
+        return;
+      }
+
       await api.post(`/portfolio/portfolios/${portfolioId}/trades/`, {
         stockId: tradeForm.stockId,
         side: tradeForm.side,
-        quantity: Number(tradeForm.quantity),
+        quantity,
         tradeDate: tradeForm.tradeDate,
       }, { params: { currency: selectedCurrency } });
       await loadData();
@@ -252,7 +259,7 @@ const PortfolioDetailsPage: React.FC<Props> = ({ activeTab }) => {
                     {analytics.positions.map((position, idx) => (
                       <tr key={`${position.stock.id}-${idx}`}>
                         <td>{position.stock.indexISIN}</td>
-                        <td>{Number(position.quantity).toFixed(4)}</td>
+                        <td>{toNumber(position.quantity).toFixed(0)}</td>
                         <td>{Number(position.invested).toFixed(2)}</td>
                         <td>{Number(position.current_value).toFixed(2)}</td>
                         <td className={Number(position.pnl) >= 0 ? 'positive' : 'negative'}>
@@ -298,7 +305,8 @@ const PortfolioDetailsPage: React.FC<Props> = ({ activeTab }) => {
               <input
                 className="input"
                 type="number"
-                step="0.0001"
+                step="1"
+                min="1"
                 placeholder="Количество"
                 value={tradeForm.quantity}
                 onChange={(e) => setTradeForm((prev) => ({ ...prev, quantity: e.target.value }))}
@@ -345,7 +353,7 @@ const PortfolioDetailsPage: React.FC<Props> = ({ activeTab }) => {
                         <td className={trade.side === 'BUY' ? 'positive' : 'negative'}>
                           {trade.side === 'BUY' ? 'ПОКУПКА' : 'ПРОДАЖА'}
                         </td>
-                        <td>{quantity.toFixed(4)}</td>
+                        <td>{quantity.toFixed(0)}</td>
                         <td>{pricePerShare.toFixed(2)}</td>
                         <td>{volume.toFixed(2)}</td>
                         <td style={{ textAlign: 'right' }}>

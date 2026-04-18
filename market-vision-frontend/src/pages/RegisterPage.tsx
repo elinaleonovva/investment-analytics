@@ -15,8 +15,16 @@ const RegisterPage: React.FC = () => {
     try {
       await register({ email, password });
       navigate('/');
-    } catch (_err) {
-      setError('Не удалось зарегистрироваться. Проверьте данные.');
+    } catch (err: any) {
+      const emailError = err.response?.data?.email;
+      const detail = err.response?.data?.detail;
+
+      if (Array.isArray(emailError) && emailError.length > 0) {
+        setError(emailError[0]);
+        return;
+      }
+
+      setError(detail || 'Не удалось зарегистрироваться. Проверьте данные.');
     }
   };
 

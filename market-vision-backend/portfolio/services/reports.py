@@ -33,8 +33,9 @@ def build_portfolio_pdf_report(portfolio, analytics_payload, currency="USD"):
     pdf.setFont("Helvetica", 9)
     for row in analytics_payload["positions"]:
         stock = row["stock"]
+        quantity = int(row["quantity"])
         line = (
-            f"{stock.indexISIN:10} qty={row['quantity']:.4f} "
+            f"{stock.indexISIN:10} quantity={quantity} "
             f"invested={row['invested']:.2f} current={row['current_value']:.2f} "
             f"PnL={row['pnl']:.2f} ({row['pnl_percent']:.2f}%)"
         )

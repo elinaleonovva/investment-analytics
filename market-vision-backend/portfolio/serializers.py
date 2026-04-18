@@ -34,6 +34,7 @@ class PortfolioListSerializer(serializers.ModelSerializer):
 
 class TradeSerializer(serializers.ModelSerializer):
     stock = StockSerializer(source="stockId", read_only=True)
+    quantity = serializers.DecimalField(max_digits=20, decimal_places=0)
     price_per_share = serializers.SerializerMethodField()
 
     class Meta:
@@ -64,6 +65,11 @@ class TradeSerializer(serializers.ModelSerializer):
             date=obj.tradeDate,
         )
         return obj.price_per_share * fx
+
+    def validate_quantity(self, value):
+        if value != value.to_integral_value():
+            raise serializers.ValidationError("Количество должно быть целым числом.")
+        return value
 
 
 class PortfolioDetailSerializer(serializers.ModelSerializer):
@@ -115,7 +121,7 @@ class BenchmarkSerializer(serializers.Serializer):
 
 class PortfolioPositionAnalyticsSerializer(serializers.Serializer):
     stock = StockSerializer()
-    quantity = serializers.DecimalField(max_digits=20, decimal_places=6)
+    quantity = serializers.DecimalField(max_digits=20, decimal_places=0)
     invested = serializers.DecimalField(max_digits=20, decimal_places=2)
     current_value = serializers.DecimalField(max_digits=20, decimal_places=2)
     pnl = serializers.DecimalField(max_digits=20, decimal_places=2)

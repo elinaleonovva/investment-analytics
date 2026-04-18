@@ -120,6 +120,19 @@ class PortfolioAnalyticsTests(TestCase):
 
         self.assertTrue(serializer.is_valid(), serializer.errors)
 
+    def test_trade_serializer_rejects_fractional_quantity(self):
+        serializer = TradeSerializer(
+            data={
+                "stockId": self.stock.id,
+                "side": Trade.Side.BUY,
+                "quantity": "1.5",
+                "tradeDate": "2026-04-17",
+            }
+        )
+
+        self.assertFalse(serializer.is_valid())
+        self.assertEqual(serializer.errors["quantity"][0], "Количество должно быть целым числом.")
+
     @patch("fixings.models.Currency.get_rate_to")
     @patch("fixings.models.Index.get_price")
     def test_positions_analytics_converts_trade_cost_to_requested_currency(self, mock_get_price, mock_get_rate_to):

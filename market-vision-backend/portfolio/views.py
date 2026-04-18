@@ -55,7 +55,7 @@ class PortfolioDetailView(APIView):
         portfolio = get_object_or_404(Portfolio, pk=pk, userId=request.user)
         new_name = request.data.get("name")
         if not new_name:
-            return Response({"error": "name is required"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": "Необходимо указать название портфеля."}, status=status.HTTP_400_BAD_REQUEST)
         portfolio.name = new_name
         portfolio.save(update_fields=["name"])
         return Response({"success": True, "name": portfolio.name})
@@ -87,21 +87,23 @@ class PortfolioTradesView(APIView):
         currency = request.query_params.get("currency", "USD")
 
         if quantity <= 0:
-            return Response({"error": "quantity must be greater than zero"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": "Количество должно быть больше нуля."}, status=status.HTTP_400_BAD_REQUEST)
 
         if side == Trade.Side.SELL:
             positions = portfolio.get_positions_analytics(currency=currency)
             current_qty = positions.get(stock.id, {}).get("quantity", Decimal("0"))
             if quantity > current_qty:
+                current_qty_int = int(current_qty)
+                quantity_int = int(quantity)
                 return Response(
-                    {"error": f"Not enough quantity. You have {current_qty}, trying to sell {quantity}."},
+                    {"error": f"Недостаточно количества для продажи. Доступно: {current_qty_int}, попытка продать: {quantity_int}."},
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
         price_per_share = stock.get_price(date=trade_date)
 
         if not price_per_share or price_per_share <= 0:
-            return Response({"error": "Failed to fetch stock price for this date"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": "Не удалось получить цену инструмента на выбранную дату."}, status=status.HTTP_400_BAD_REQUEST)
 
         trade = Trade.objects.create(
             portfolioId=portfolio,

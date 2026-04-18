@@ -24,7 +24,6 @@ const LoginPage: React.FC = () => {
     <div className="auth-container">
       <div className="auth-card">
         <h1 className="auth-title">Вход в систему</h1>
-        <p className="auth-subtitle">Базовая панель для курсовой по backend</p>
         <form className="auth-form" onSubmit={handleLogin}>
           <div className="form-group">
             <label htmlFor="email">Email</label>
