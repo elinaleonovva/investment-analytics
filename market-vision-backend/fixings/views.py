@@ -1,5 +1,6 @@
 import datetime
 
+from django.core.management import call_command
 from rest_framework import generics, permissions
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
@@ -11,7 +12,6 @@ from .serializers import (
     MarketMetalSerializer,
     StockSerializer,
 )
-from .services.market_data import MarketUpdaterService
 
 
 class MarketPaginator(PageNumberPagination):
@@ -62,14 +62,11 @@ class UpdateMarketDataView(generics.GenericAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request, *args, **kwargs):
-        days_back = int(request.data.get("days_back", 30))
-        updater = MarketUpdaterService()
-        updater.update_market_data(days_back=days_back)
+        call_command("get_fixings_alltime")
         return Response(
             {
                 "success": True,
-                "message": "Market data updated from external APIs (Yahoo Finance).",
-                "days_back": days_back,
+                "message": "Данные рынка успешно обновлены.",
             }
         )
 
