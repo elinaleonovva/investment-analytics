@@ -6,6 +6,7 @@ import { Currency, PortfolioAnalytics, PortfolioDetail, Stock, Trade } from '../
 import '../styles/portfolio-details.css';
 
 type TabType = 'overview' | 'trades' | 'reports';
+const EXCLUDED_STOCK_TICKERS = new Set(['BRK.B']);
 
 interface Props {
   activeTab?: TabType;
@@ -53,7 +54,9 @@ const PortfolioDetailsPage: React.FC<Props> = ({ activeTab }) => {
       api.get(`/portfolio/portfolios/${portfolioId}/`, { params: { currency: selectedCurrency } }),
     ]);
     const currenciesData = currenciesRes.data || [];
-    const stocksData = stocksRes.data || [];
+    const stocksData = (stocksRes.data || []).filter(
+      (stock: Stock) => !EXCLUDED_STOCK_TICKERS.has(stock.indexISIN)
+    );
 
     setCurrencies(currenciesData);
     setStocks(stocksData);

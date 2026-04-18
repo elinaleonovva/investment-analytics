@@ -3,6 +3,8 @@ import api, { toNumber } from '../api/client';
 import { Currency, MarketCurrency, Metal, Stock } from '../types';
 import '../styles/market.css';
 
+const EXCLUDED_STOCK_TICKERS = new Set(['BRK.B']);
+
 const MarketPage: React.FC = () => {
   const [selectedCurrency, setSelectedCurrency] = useState('USD');
   const [availableCurrencies, setAvailableCurrencies] = useState<Currency[]>([]);
@@ -33,7 +35,8 @@ const MarketPage: React.FC = () => {
         api.get('/fixings/market/metals/', { params: { currency: selectedCurrency, page_size: 200 } }),
       ]);
       setAvailableCurrencies(currRef.data || []);
-      setStocks(stocksRes.data.results || stocksRes.data || []);
+      const rawStocks = stocksRes.data.results || stocksRes.data || [];
+      setStocks(rawStocks.filter((stock: Stock) => !EXCLUDED_STOCK_TICKERS.has(stock.indexISIN)));
       setCurrencies(marketCurrenciesRes.data.results || marketCurrenciesRes.data || []);
       setMetals(metalsRes.data.results || metalsRes.data || []);
     } catch (_error) {
