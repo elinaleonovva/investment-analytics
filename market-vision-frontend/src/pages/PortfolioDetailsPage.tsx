@@ -37,6 +37,7 @@ const PortfolioDetailsPage: React.FC<Props> = ({ activeTab }) => {
     quantity: '1',
     tradeDate: new Date().toISOString().slice(0, 10),
   });
+  const today = new Date().toISOString().slice(0, 10);
 
   const tabs = useMemo(
     () => [
@@ -122,6 +123,11 @@ const PortfolioDetailsPage: React.FC<Props> = ({ activeTab }) => {
 
       if (!Number.isInteger(quantity) || quantity <= 0) {
         setError('Количество должно быть целым числом больше нуля.');
+        return;
+      }
+
+      if (tradeForm.tradeDate > today) {
+        setError('Дата сделки не может быть в будущем.');
         return;
       }
 
@@ -317,6 +323,7 @@ const PortfolioDetailsPage: React.FC<Props> = ({ activeTab }) => {
               <input
                 className="input"
                 type="date"
+                max={today}
                 value={tradeForm.tradeDate}
                 onChange={(e) => setTradeForm((prev) => ({ ...prev, tradeDate: e.target.value }))}
               />

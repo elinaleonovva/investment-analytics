@@ -3,6 +3,7 @@ from decimal import Decimal
 from unittest.mock import patch
 
 from django.test import TestCase
+from django.utils import timezone
 
 from authentication.models import User
 from fixings.models import Currency, Index
@@ -132,6 +133,37 @@ class PortfolioAnalyticsTests(TestCase):
 
         self.assertFalse(serializer.is_valid())
         self.assertEqual(serializer.errors["quantity"][0], "Количество должно быть целым числом.")
+
+    def test_trade_serializer_rejects_future_trade_date(self):
+        future_date = timezone.localdate() + datetime.timedelta(days=1)
+        serializer = TradeSerializer(
+            data={
+                "stockId": self.stock.id,
+                "side": Trade.Side.BUY,
+                "quantity": "1",
+                "tradeDate": future_date.isoformat(),
+            }
+        )
+
+        self.assertFalse(serializer.is_valid())
+        self.assertEqual(serializer.errors["tradeDate"][0], "Дата сделки не может быть в будущем.")
+
+    def test_create_trade_api_rejects_future_trade_date(self):
+        self.client.force_login(self.user)
+        future_date = timezone.localdate() + datetime.timedelta(days=1)
+
+        response = self.client.post(
+            f"/portfolio/portfolios/{self.portfolio.id}/trades/",
+            data={
+                "stockId": self.stock.id,
+                "side": Trade.Side.BUY,
+                "quantity": "1",
+                "tradeDate": future_date.isoformat(),
+            },
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.json()["tradeDate"][0], "Дата сделки не может быть в будущем.")
 
     @patch("fixings.models.Currency.get_rate_to")
     @patch("fixings.models.Index.get_price")

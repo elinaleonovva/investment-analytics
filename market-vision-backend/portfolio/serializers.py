@@ -1,3 +1,4 @@
+from django.utils import timezone
 from rest_framework import serializers
 
 from fixings.models import Currency
@@ -65,6 +66,11 @@ class TradeSerializer(serializers.ModelSerializer):
             date=obj.tradeDate,
         )
         return obj.price_per_share * fx
+
+    def validate_tradeDate(self, value):
+        if value > timezone.localdate():
+            raise serializers.ValidationError("Дата сделки не может быть в будущем.")
+        return value
 
     def validate_quantity(self, value):
         if value != value.to_integral_value():
