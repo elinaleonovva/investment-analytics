@@ -332,7 +332,7 @@ const PortfolioDetailsPage: React.FC<Props> = ({ activeTab }) => {
               </button>
             </div>
             <p style={{ fontSize: '12px', color: '#666', marginTop: '10px' }}>
-              *Цена исполнения будет автоматически рассчитана на основе котировок за выбранную дату.
+              *Цена исполнения будет автоматически рассчитана на основе котировок за выбранную дату
             </p>
           </section>
 
