@@ -78,6 +78,33 @@ class PortfolioAnalyticsTests(TestCase):
         self.assertEqual(analytics["totalPnLPercent"], Decimal("24"))
         self.assertEqual(analytics["positions"][0]["pnl_percent"], Decimal("24"))
 
+    @patch("fixings.models.Index.get_price")
+    def test_analytics_ignores_invalid_sell_without_prior_quantity(self, mock_get_price):
+        mock_get_price.return_value = Decimal("120")
+
+        Trade.objects.create(
+            portfolioId=self.portfolio,
+            stockId=self.stock,
+            side=Trade.Side.SELL,
+            quantity=Decimal("10"),
+            price_per_share=Decimal("120"),
+            tradeDate=datetime.date(2026, 1, 9),
+        )
+        Trade.objects.create(
+            portfolioId=self.portfolio,
+            stockId=self.stock,
+            side=Trade.Side.BUY,
+            quantity=Decimal("10"),
+            price_per_share=Decimal("100"),
+            tradeDate=datetime.date(2026, 1, 10),
+        )
+
+        summary = self.portfolio.get_portfolio_summary(currency="USD")
+
+        self.assertEqual(summary["currentValue"], Decimal("1200"))
+        self.assertEqual(summary["investedValue"], Decimal("1000"))
+        self.assertEqual(summary["pnl"], Decimal("200"))
+
     def test_trade_serializer_includes_price_per_share(self):
         trade = Trade.objects.create(
             portfolioId=self.portfolio,
@@ -92,6 +119,65 @@ class PortfolioAnalyticsTests(TestCase):
 
         self.assertIn("price_per_share", serialized)
         self.assertEqual(Decimal(str(serialized["price_per_share"])), Decimal("123.45"))
+
+    def test_create_trade_api_rejects_sell_before_first_buy_date(self):
+        self.client.force_login(self.user)
+        Trade.objects.create(
+            portfolioId=self.portfolio,
+            stockId=self.stock,
+            side=Trade.Side.BUY,
+            quantity=Decimal("10"),
+            price_per_share=Decimal("100"),
+            tradeDate=datetime.date(2026, 4, 17),
+        )
+
+        response = self.client.post(
+            f"/api/portfolio/portfolios/{self.portfolio.id}/trades/",
+            data={
+                "stockId": self.stock.id,
+                "side": Trade.Side.SELL,
+                "quantity": "1",
+                "tradeDate": "2026-04-16",
+            },
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.json()["error"], "Дата продажи не может быть раньше даты покупки.")
+
+    def test_create_trade_api_rejects_sell_more_than_available_on_trade_date(self):
+        self.client.force_login(self.user)
+        Trade.objects.create(
+            portfolioId=self.portfolio,
+            stockId=self.stock,
+            side=Trade.Side.BUY,
+            quantity=Decimal("1"),
+            price_per_share=Decimal("100"),
+            tradeDate=datetime.date(2026, 4, 16),
+        )
+        Trade.objects.create(
+            portfolioId=self.portfolio,
+            stockId=self.stock,
+            side=Trade.Side.BUY,
+            quantity=Decimal("9"),
+            price_per_share=Decimal("100"),
+            tradeDate=datetime.date(2026, 4, 17),
+        )
+
+        response = self.client.post(
+            f"/api/portfolio/portfolios/{self.portfolio.id}/trades/",
+            data={
+                "stockId": self.stock.id,
+                "side": Trade.Side.SELL,
+                "quantity": "2",
+                "tradeDate": "2026-04-16",
+            },
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(
+            response.json()["error"],
+            "Недостаточно количества для продажи на выбранную дату. Доступно: 1, попытка продать: 2.",
+        )
 
     @patch("fixings.models.Currency.get_rate_to")
     def test_trade_serializer_converts_price_per_share_to_requested_currency(self, mock_get_rate_to):

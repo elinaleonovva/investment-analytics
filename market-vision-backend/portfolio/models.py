@@ -52,6 +52,8 @@ class Portfolio(models.Model):
                 pos["quantity"] += trade_qty
                 pos["average_cost"] = (total_cost_before + new_cost) / pos["quantity"]
             elif trade.side == Trade.Side.SELL:
+                if trade_qty > pos["quantity"]:
+                    continue
                 realized_cost = trade_qty * pos["average_cost"]
                 pos["quantity"] -= trade_qty
                 realized = trade_qty * (trade_price - pos["average_cost"])

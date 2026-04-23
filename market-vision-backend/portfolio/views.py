@@ -55,7 +55,7 @@ class PortfolioDetailView(APIView):
         portfolio = get_object_or_404(Portfolio, pk=pk, userId=request.user)
         new_name = request.data.get("name")
         if not new_name:
-            return Response({"error": "Необходимо указать название портфеля."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": "Необходимо указать название портфеля"}, status=status.HTTP_400_BAD_REQUEST)
         portfolio.name = new_name
         portfolio.save(update_fields=["name"])
         return Response({"success": True, "name": portfolio.name})
@@ -87,23 +87,53 @@ class PortfolioTradesView(APIView):
         currency = request.query_params.get("currency", "USD")
 
         if quantity <= 0:
-            return Response({"error": "Количество должно быть больше нуля."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": "Количество должно быть больше нуля"}, status=status.HTTP_400_BAD_REQUEST)
 
         if side == Trade.Side.SELL:
+            first_buy = portfolio.trades.filter(
+                stockId=stock,
+                side=Trade.Side.BUY,
+            ).order_by("tradeDate", "id").first()
+
+            if not first_buy or trade_date < first_buy.tradeDate:
+                return Response(
+                    {"error": "Дата продажи не может быть раньше даты покупки"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            historical_quantity = Decimal("0")
+            historical_trades = portfolio.trades.filter(
+                stockId=stock,
+                tradeDate__lte=trade_date,
+            ).order_by("tradeDate", "id")
+            for historical_trade in historical_trades:
+                if historical_trade.side == Trade.Side.BUY:
+                    historical_quantity += historical_trade.quantity
+                elif historical_trade.side == Trade.Side.SELL:
+                    historical_quantity -= historical_trade.quantity
+
+            if quantity > historical_quantity:
+                current_qty_int = int(historical_quantity)
+                quantity_int = int(quantity)
+                return Response(
+                    {"error": f"Недостаточно количества для продажи на выбранную дату. Доступно: {current_qty_int}, попытка продать: {quantity_int}"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
             positions = portfolio.get_positions_analytics(currency=currency)
             current_qty = positions.get(stock.id, {}).get("quantity", Decimal("0"))
             if quantity > current_qty:
                 current_qty_int = int(current_qty)
                 quantity_int = int(quantity)
                 return Response(
-                    {"error": f"Недостаточно количества для продажи. Доступно: {current_qty_int}, попытка продать: {quantity_int}."},
+                    {"error": f"Недостаточно количества для продажи. Доступно: {current_qty_int}, попытка продать: {quantity_int}"},
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
         price_per_share = stock.get_price(date=trade_date)
 
         if not price_per_share or price_per_share <= 0:
-            return Response({"error": "Не удалось получить цену инструмента на выбранную дату."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": "Не удалось получить цену инструмента на выбранную дату"}, status=status.HTTP_400_BAD_REQUEST)
 
         trade = Trade.objects.create(
             portfolioId=portfolio,
